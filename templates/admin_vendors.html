@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Vendor Management{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h3>Vendor Management</h3>
+        <p class="text-muted">View and manage all registered vendors. Approve/disable visibility.</p>
+    </div>
+    <a href="{{ url_for('admin.all_vendor_services') }}" class="btn btn-outline-primary">View All Vendor Services</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="stats-card">
+            <h6>Total Vendors</h6>
+            <h4>{{ vendors|length }}</h4>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stats-card">
+            <h6>Total Services</h6>
+            <h4>{{ total_services|default(0) }}</h4>
+        </div>
+    </div>
+</div>
+
+{% if not vendors %}
+<div class="card p-4 text-center text-muted">No vendors registered yet.</div>
+{% else %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead><tr><th>Business</th><th>Service Type</th><th>Contact</th><th>Services</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for v in vendors %}
+            <tr>
+                <td>{{ v.business_name }}</td>
+                <td>{{ v.service_type }}</td>
+                <td>{{ v.contact_email }}</td>
+                <td>{{ v.service_count or 0 }}</td>
+                <td>
+                    {% if v.is_approved %}<span class="badge bg-success">Approved</span>
+                    {% else %}<span class="badge bg-warning">Pending</span>{% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.view_vendor_services', vendor_id=v.id) }}" class="btn btn-sm btn-outline-primary">View Services</a>
+                    <a href="{{ url_for('admin.toggle_vendor', vendor_id=v.id) }}" class="btn btn-sm btn-outline-secondary">
+                        {% if v.is_approved %}Disable{% else %}Approve{% endif %}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

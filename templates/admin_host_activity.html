@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Host Activity - {{ host.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('admin.list_hosts') }}" class="text-muted text-decoration-none">&larr; All Hosts</a>
+    <h3 class="mt-2">{{ host.name }}</h3>
+    <p class="text-muted">{{ host.email }} · Host since {{ host.created_at.strftime('%Y-%m-%d') if host.created_at else '-' }}</p>
+</div>
+
+<h5>Invitations and Activity ({{ invitations|length }})</h5>
+
+{% if not invitations %}
+<div class="card p-4 text-center text-muted">This host has not created any invitations yet.</div>
+{% else %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Wedding</th>
+                    <th>Date</th>
+                    <th>Venue</th>
+                    <th>Guests</th>
+                    <th>Events</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for inv in invitations %}
+            <tr>
+                <td>{{ inv.bride_name }} & {{ inv.groom_name }}</td>
+                <td>{{ inv.wedding_date }}</td>
+                <td>{{ inv.venue[:40] }}{% if inv.venue|length > 40 %}...{% endif %}</td>
+                <td>{{ inv.guest_count|default(0) }}</td>
+                <td>{{ inv.event_count|default(0) }}</td>
+                <td>
+                    <span class="badge {% if inv.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if inv.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.edit_invitation', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{{ url_for('admin.manage_guests', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Guests</a>
+                    <a href="{{ url_for('admin.manage_events', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Events</a>
+                    <a href="{{ url_for('admin.upload_images', inv_id=inv.id) }}" class="btn btn-sm btn-outline-primary">Images</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

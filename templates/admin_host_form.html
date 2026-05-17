@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Add Host{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card p-4">
+            <h4>Add Host Account</h4>
+            <p class="text-muted small">Hosts can create wedding invitations, manage guests, and events.</p>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Name *</label>
+                    <input type="text" class="form-control" name="name" required placeholder="Wedding Host Name">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-control" name="email" required placeholder="host@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password * (min 6 chars)</label>
+                    <input type="password" class="form-control" name="password" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-gold">Create Host</button>
+                <a href="{{ url_for('admin.list_hosts') }}" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

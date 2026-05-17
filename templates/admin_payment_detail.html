@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Payment Transaction #{{ transaction.id }} - Admin{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('admin.payment_transactions') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Transactions
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3>Payment Transaction #{{ transaction.id }}</h3>
+        <p class="text-muted">Detailed transaction information</p>
+    </div>
+    <span class="badge 
+        {% if transaction.status == 'Verified' %}bg-success
+        {% elif transaction.status == 'Pending' %}bg-warning text-dark
+        {% elif transaction.status == 'Rejected' %}bg-danger
+        {% else %}bg-secondary{% endif %} fs-5">
+        {{ transaction.status }}
+    </span>
+</div>
+
+<div class="row">
+    <!-- Transaction Details -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Transaction Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="40%">Transaction ID:</th>
+                        <td><strong>#{{ transaction.id }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Booking ID:</th>
+                        <td>#{{ transaction.booking_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Transaction Type:</th>
+                        <td>
+                            <span class="badge {% if transaction.transaction_type == 'Advance' %}bg-info{% else %}bg-primary{% endif %}">
+                                {{ transaction.transaction_type }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Amount:</th>
+                        <td><strong class="text-success fs-5">₹{{ "%.2f"|format(transaction.amount) }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Payment Method:</th>
+                        <td>{{ transaction.payment_method or 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Transaction Ref:</th>
+                        <td>{{ transaction.transaction_id or 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Submitted Date:</th>
+                        <td>{{ transaction.created_at.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                    </tr>
+                    {% if transaction.verified_at %}
+                    <tr>
+                        <th>Verified Date:</th>
+                        <td>{{ transaction.verified_at.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if transaction.notes %}
+                    <tr>
+                        <th>Notes:</th>
+                        <td>{{ transaction.notes }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment Proof -->
+        {% if transaction.payment_proof %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-image"></i> Payment Proof</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename=transaction.payment_proof) }}" 
+                     class="img-fluid" 
+                     style="max-height: 400px; cursor: pointer;"
+                     onclick="window.open(this.src, '_blank')">
+                <p class="text-muted mt-2 mb-0">
+                    <small>Click image to view full size</small>
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Vendor & Host Details -->
+    <div class="col-md-6">
+        <!-- Vendor Info -->
+        <div class="card mb-4">
+            <div class="card-header bg-gold text-white">
+                <h5 class="mb-0"><i class="bi bi-shop"></i> Vendor Information</h5>
+            </div>
+            <div class="card-body">
+                <h5>{{ transaction.business_name }}</h5>
+                <p class="mb-1"><i class="bi bi-envelope"></i> {{ transaction.vendor_email }}</p>
+                <p class="mb-1"><i class="bi bi-telephone"></i> {{ transaction.vendor_phone or 'N/A' }}</p>
+                <hr>
+                <p class="mb-1"><strong>Service:</strong> {{ transaction.service_title or 'General Inquiry' }}</p>
+                {% if transaction.service_price %}
+                <p class="mb-0"><strong>Service Price:</strong> ₹{{ "%.2f"|format(transaction.service_price) }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Host Info -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Host Information</h5>
+            </div>
+            <div class="card-body">
+                <h5>{{ transaction.host_name }}</h5>
+                <p class="mb-1"><i class="bi bi-envelope"></i> {{ transaction.host_email }}</p>
+                <p class="mb-0"><i class="bi bi-telephone"></i> {{ transaction.host_phone or 'N/A' }}</p>
+            </div>
+        </div>
+
+        <!-- Booking Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Booking Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr>
+                        <th width="40%">Event Date:</th>
+                        <td>{{ transaction.event_date.strftime('%B %d, %Y') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Booking Status:</th>
+                        <td>
+                            <span class="badge 
+                                {% if transaction.booking_status == 'Confirmed' %}bg-success
+                                {% elif transaction.booking_status == 'Completed' %}bg-primary
+                                {% elif transaction.booking_status == 'Cancelled' %}bg-danger
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ transaction.booking_status }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Payment Status:</th>
+                        <td>
+                            <span class="badge 
+                                {% if transaction.payment_status == 'Fully Paid' %}bg-success
+                                {% elif transaction.payment_status == 'Advance Paid' %}bg-info
+                                {% else %}bg-secondary{% endif %}">
+                                {{ transaction.payment_status or 'Not Paid' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% if transaction.booking_amount %}
+                    <tr>
+                        <th>Total Booking Amount:</th>
+                        <td><strong>₹{{ "%.2f"|format(transaction.booking_amount) }}</strong></td>
+                    </tr>
+                    {% endif %}
+                    {% if transaction.advance_amount %}
+                    <tr>
+                        <th>Advance Amount:</th>
+                        <td>₹{{ "%.2f"|format(transaction.advance_amount) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if transaction.final_amount %}
+                    <tr>
+                        <th>Final Amount:</th>
+                        <td>₹{{ "%.2f"|format(transaction.final_amount) }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Transactions for This Booking -->
+{% if booking_transactions|length > 1 %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list-ul"></i> All Transactions for This Booking</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bt in booking_transactions %}
+                    <tr {% if bt.id == transaction.id %}class="table-active"{% endif %}>
+                        <td><strong>#{{ bt.id }}</strong></td>
+                        <td>{{ bt.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="badge {% if bt.transaction_type == 'Advance' %}bg-info{% else %}bg-primary{% endif %}">
+                                {{ bt.transaction_type }}
+                            </span>
+                        </td>
+                        <td>₹{{ "%.2f"|format(bt.amount) }}</td>
+                        <td>{{ bt.payment_method or 'N/A' }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if bt.status == 'Verified' %}bg-success
+                                {% elif bt.status == 'Pending' %}bg-warning text-dark
+                                {% elif bt.status == 'Rejected' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ bt.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('admin.payment_transactions') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to All Transactions
+    </a>
+</div>
+{% endblock %}

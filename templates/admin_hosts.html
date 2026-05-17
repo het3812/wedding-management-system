@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Host Activity & Management{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Host Activity & Management</h2>
+        <p class="text-muted">View all hosts and their activity (invitations, guests, events).</p>
+    </div>
+    <a href="{{ url_for('admin.add_host') }}" class="btn btn-gold">+ Add Host</a>
+</div>
+
+{% if not hosts %}
+<div class="card p-5 text-center text-muted">
+    <p class="mb-3">No host accounts yet.</p>
+    <a href="{{ url_for('admin.add_host') }}" class="btn btn-gold">Add First Host</a>
+</div>
+{% else %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Invitations</th>
+                    <th>Guests</th>
+                    <th>Events</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for h in hosts %}
+            <tr>
+                <td>{{ h.name }}</td>
+                <td>{{ h.email }}</td>
+                <td>{{ h.invitation_count|default(0) }}</td>
+                <td>{{ h.guest_count|default(0) }}</td>
+                <td>{{ h.event_count|default(0) }}</td>
+                <td>{{ h.created_at.strftime('%Y-%m-%d') if h.created_at else '-' }}</td>
+                <td>
+                    <a href="{{ url_for('admin.host_activity', host_id=h.id) }}" class="btn btn-sm btn-outline-primary">View Activity</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<p class="mt-3">
+    <a href="{{ url_for('admin.dashboard') }}" class="text-muted">&larr; Back to Dashboard</a>
+</p>
+{% endblock %}

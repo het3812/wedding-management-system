@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP - {{ guest.bride_name }} & {{ guest.groom_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fdf8f3 0%, #f5e6d3 100%);
+            min-height: 100vh;
+            font-family: 'Georgia', serif;
+            padding: 1rem;
+        }
+        .rsvp-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #f0e6d2;
+        }
+        .couple-names {
+            font-size: 1.8rem;
+            color: #c9a227;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+        .guest-name {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 1rem;
+        }
+        .event-info {
+            background: #fdf8f3;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .event-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0e6d2;
+        }
+        .event-item:last-child {
+            border-bottom: none;
+        }
+        .rsvp-options {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .rsvp-option {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .rsvp-option:hover {
+            border-color: #c9a227;
+            background: #fdf8f3;
+        }
+        .rsvp-option input[type="radio"] {
+            display: none;
+        }
+        .rsvp-option input[type="radio"]:checked + label {
+            color: #c9a227;
+            font-weight: 600;
+        }
+        .rsvp-option.selected {
+            border-color: #c9a227;
+            background: #fdf8f3;
+        }
+        .btn-submit {
+            background: #c9a227;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            background: #b8921f;
+        }
+        .plus-one-section {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        @media (max-width: 576px) {
+            .rsvp-card {
+                padding: 1.5rem;
+                margin: 1rem auto;
+            }
+            .couple-names {
+                font-size: 1.5rem;
+            }
+            .rsvp-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="rsvp-card">
+        <div class="header">
+            {% if guest.profile_image %}
+            <div class="mb-3">
+                <img src="{{ url_for('static', filename=guest.profile_image) }}" 
+                     alt="{{ guest.bride_name }} & {{ guest.groom_name }}" 
+                     class="rounded-circle"
+                     style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #c9a227;">
+            </div>
+            {% endif %}
+            <p class="text-muted small mb-2">You're invited to celebrate</p>
+            <h1 class="couple-names">{{ guest.bride_name }} & {{ guest.groom_name }}</h1>
+            <p class="text-muted mb-0">📅 {{ guest.wedding_date }}</p>
+            <p class="text-muted">📍 {{ guest.venue }}</p>
+            <div class="guest-name">
+                Dear <strong>{{ guest.name }}</strong>
+            </div>
+        </div>
+
+        {% if events %}
+        <div class="event-info">
+            <h6 class="mb-3" style="color:#c9a227;">Event Schedule</h6>
+            {% for e in events %}
+            <div class="event-item">
+                <strong>{{ e.event_name }}</strong><br>
+                <small class="text-muted">
+                    {{ e.event_date }}{% if e.time_display %} at {{ e.time_display }}{% endif %}<br>
+                    📍 {{ e.venue }}
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if guest.rsvp_submitted_at %}
+        <div class="alert alert-info">
+            <strong>You have already responded to this invitation.</strong><br>
+            Status: <strong>{{ guest.rsvp_status }}</strong><br>
+            <small>Submitted on {{ guest.rsvp_submitted_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+            <hr>
+            <p class="mb-0">You can update your response below if needed.</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" id="rsvpForm">
+            <h6 class="mb-3">Will you be attending?</h6>
+            
+            <div class="rsvp-options">
+                <div class="rsvp-option" onclick="selectRSVP('Confirmed', this)">
+                    <input type="radio" name="rsvp_status" value="Confirmed" id="confirm" {% if guest.rsvp_status == 'Confirmed' %}checked{% endif %}>
+                    <label for="confirm" style="cursor: pointer; display: block;">
+                        <div style="font-size: 2rem;">✓</div>
+                        <div>Yes, I'll be there!</div>
+                    </label>
+                </div>
+                
+                <div class="rsvp-option" onclick="selectRSVP('Declined', this)">
+                    <input type="radio" name="rsvp_status" value="Declined" id="decline" {% if guest.rsvp_status == 'Declined' %}checked{% endif %}>
+                    <label for="decline" style="cursor: pointer; display: block;">
+                        <div style="font-size: 2rem;">✗</div>
+                        <div>Sorry, can't make it</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Will you bring a plus one?</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="plus_one" value="yes" id="plusOneYes" {% if guest.plus_one %}checked{% endif %} onchange="togglePlusOne()">
+                    <label class="form-check-label" for="plusOneYes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="plus_one" value="no" id="plusOneNo" {% if not guest.plus_one %}checked{% endif %} onchange="togglePlusOne()">
+                    <label class="form-check-label" for="plusOneNo">No</label>
+                </div>
+            </div>
+
+            <div class="plus-one-section" id="plusOneSection">
+                <label for="plus_one_name" class="form-label">Plus One Name</label>
+                <input type="text" class="form-control" id="plus_one_name" name="plus_one_name" 
+                       placeholder="Enter guest name" value="{{ guest.plus_one_name or '' }}">
+            </div>
+
+            <div class="mb-3">
+                <label for="rsvp_response" class="form-label">Message to the couple (optional)</label>
+                <textarea class="form-control" id="rsvp_response" name="rsvp_response" 
+                          rows="3" placeholder="Share your wishes or dietary requirements...">{{ guest.rsvp_response or '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-submit">Submit RSVP</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                <a href="{{ url_for('invitation.view_invitation', token=guest.invite_token) }}" 
+                   class="text-decoration-none">View Full Invitation</a>
+            </small>
+        </div>
+    </div>
+
+    <script>
+        function selectRSVP(status, element) {
+            document.querySelectorAll('.rsvp-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById(status === 'Confirmed' ? 'confirm' : 'decline').checked = true;
+        }
+
+        function togglePlusOne() {
+            const plusOneSection = document.getElementById('plusOneSection');
+            const plusOneYes = document.getElementById('plusOneYes');
+            plusOneSection.style.display = plusOneYes.checked ? 'block' : 'none';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkedOption = document.querySelector('input[name="rsvp_status"]:checked');
+            if (checkedOption) {
+                checkedOption.parentElement.parentElement.classList.add('selected');
+            }
+            togglePlusOne();
+        });
+
+        // Form validation
+        document.getElementById('rsvpForm').addEventListener('submit', function(e) {
+            const rsvpStatus = document.querySelector('input[name="rsvp_status"]:checked');
+            if (!rsvpStatus) {
+                e.preventDefault();
+                alert('Please select whether you will attend.');
+            }
+        });
+    </script>
+</body>
+</html>

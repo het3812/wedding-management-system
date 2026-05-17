@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% block title %}Commission Dashboard - Admin{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+    .stat-card {
+        border-left: 4px solid;
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .stat-card.total { border-color: #0d6efd; }
+    .stat-card.collected { border-color: #198754; }
+    .stat-card.pending { border-color: #ffc107; }
+    .stat-card.waived { border-color: #6c757d; }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 30px;
+    }
+    .commission-badge {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.65rem;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+        <div class="mb-3">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col">
+                <h2><i class="fas fa-chart-line"></i> Commission Tracking Dashboard</h2>
+                <p class="text-muted">Track and manage 2.5% commission from vendor transactions</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4 g-3">
+            <div class="col-md-3">
+                <div class="stats-card stat-card total">
+                    <h6>Total Commission</h6>
+                    <h4>₹{{ "%.2f"|format(stats.total_commission or 0) }}</h4>
+                    <small class="text-muted">{{ stats.total_records or 0 }} records</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card stat-card collected">
+                    <h6>Collected</h6>
+                    <h4 class="text-success">₹{{ "%.2f"|format(stats.collected_commission or 0) }}</h4>
+                    <small class="text-muted">{{ stats.collected_count or 0 }} transactions</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card stat-card pending">
+                    <h6>Pending</h6>
+                    <h4 class="text-warning">₹{{ "%.2f"|format(stats.pending_commission or 0) }}</h4>
+                    <small class="text-muted">{{ stats.pending_count or 0 }} transactions</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card stat-card waived">
+                    <h6>Waived</h6>
+                    <h4 class="text-secondary">₹{{ "%.2f"|format(stats.waived_commission or 0) }}</h4>
+                    <small class="text-muted">{{ stats.waived_count or 0 }} transactions</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-chart-bar"></i> Monthly Commission Trend
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="monthlyTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <i class="fas fa-chart-pie"></i> Commission Status Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="statusPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Vendors Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-trophy"></i> Top 10 Vendors by Commission
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Vendor</th>
+                                        <th>Transactions</th>
+                                        <th>Total Amount</th>
+                                        <th>Total Commission</th>
+                                        <th>Collected</th>
+                                        <th>Pending</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vendor in top_vendors %}
+                                    <tr>
+                                        <td><strong>{{ loop.index }}</strong></td>
+                                        <td>{{ vendor.business_name }}</td>
+                                        <td>{{ vendor.transaction_count }}</td>
+                                        <td>₹{{ "%.2f"|format(vendor.total_transactions or 0) }}</td>
+                                        <td><strong>₹{{ "%.2f"|format(vendor.total_commission or 0) }}</strong></td>
+                                        <td class="text-success">₹{{ "%.2f"|format(vendor.collected_commission or 0) }}</td>
+                                        <td class="text-warning">₹{{ "%.2f"|format(vendor.pending_commission or 0) }}</td>
+                                        <td>
+                                            <a href="{{ url_for('admin.vendor_commission_report', vendor_id=vendor.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-file-alt"></i> Report
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-filter"></i> Filter Commission Records
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('admin.commission_dashboard') }}" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                            <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Collected" {% if status_filter == 'Collected' %}selected{% endif %}>Collected</option>
+                            <option value="Waived" {% if status_filter == 'Waived' %}selected{% endif %}>Waived</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Vendor</label>
+                        <select name="vendor" class="form-select">
+                            <option value="all">All Vendors</option>
+                            {% for vendor in vendors %}
+                            <option value="{{ vendor.id }}" {% if vendor_filter == vendor.id|string %}selected{% endif %}>
+                                {{ vendor.business_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">From Date</label>
+                        <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">To Date</label>
+                        <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Commission Records Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-list"></i> Commission Records</span>
+                <a href="{{ url_for('admin.export_commissions', status=status_filter, vendor=vendor_filter) }}" 
+                   class="btn btn-sm btn-success">
+                    <i class="fas fa-download"></i> Export CSV
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Vendor</th>
+                                <th>Transaction Type</th>
+                                <th>Amount</th>
+                                <th>Rate</th>
+                                <th>Commission</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comm in commissions %}
+                            <tr>
+                                <td>#{{ comm.id }}</td>
+                                <td>{{ comm.created_at.strftime('%Y-%m-%d') if comm.created_at else '' }}</td>
+                                <td>{{ comm.vendor_name }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ comm.transaction_type }}</span>
+                                </td>
+                                <td>₹{{ "%.2f"|format(comm.transaction_amount or 0) }}</td>
+                                <td>{{ "%.2f"|format(comm.commission_rate or 0) }}%</td>
+                                <td><strong>₹{{ "%.2f"|format(comm.commission_amount or 0) }}</strong></td>
+                                <td>
+                                    {% if comm.status == 'Collected' %}
+                                        <span class="badge bg-success commission-badge">Collected</span>
+                                    {% elif comm.status == 'Pending' %}
+                                        <span class="badge bg-warning commission-badge">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary commission-badge">Waived</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin.commission_detail', commission_id=comm.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endblock %}
+
+    {% block extra_js %}
+    <script>
+        // Monthly Trend Chart
+        const monthlyCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+        const monthlyData = {
+            labels: [{% for m in monthly_trend %}'{{ m.month }}',{% endfor %}].reverse(),
+            datasets: [
+                {
+                    label: 'Total Commission',
+                    data: [{% for m in monthly_trend %}{{ m.total_commission or 0 }},{% endfor %}].reverse(),
+                    backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'Collected',
+                    data: [{% for m in monthly_trend %}{{ m.collected or 0 }},{% endfor %}].reverse(),
+                    backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'Pending',
+                    data: [{% for m in monthly_trend %}{{ m.pending or 0 }},{% endfor %}].reverse(),
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    borderWidth: 2,
+                    tension: 0.4
+                }
+            ]
+        };
+        
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: monthlyData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toFixed(0);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Status Pie Chart
+        const pieCtx = document.getElementById('statusPieChart').getContext('2d');
+        const pieData = {
+            labels: ['Collected', 'Pending', 'Waived'],
+            datasets: [{
+                data: [
+                    {{ stats.collected_commission or 0 }},
+                    {{ stats.pending_commission or 0 }},
+                    {{ stats.waived_commission or 0 }}
+                ],
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(108, 117, 125, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(25, 135, 84, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(108, 117, 125, 1)'
+                ],
+                borderWidth: 2
+            }]
+        };
+        
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: pieData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += '₹' + context.parsed.toFixed(2);
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endblock %}

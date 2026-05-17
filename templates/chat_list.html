@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block extra_css %}
+<style>
+    .chat-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .chat-item:hover {
+        background: #f8f9fa;
+    }
+    .chat-item.unread {
+        background: #fff8e1;
+    }
+    .unread-badge {
+        background: var(--wedding-gold);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <h3>Messages</h3>
+    <p class="text-muted">Your conversations with {% if user_role == 'vendor' %}customers{% else %}vendors{% endif %}</p>
+</div>
+
+{% if not chats %}
+<div class="card p-5 text-center">
+    <i class="bi bi-chat-dots" style="font-size: 3rem; color: #ccc;"></i>
+    <h5 class="mt-3">No conversations yet</h5>
+    <p class="text-muted">
+        {% if user_role == 'vendor' %}
+        Customers will be able to chat with you from your vendor profile.
+        {% else %}
+        Start chatting with vendors from their profile pages.
+        {% endif %}
+    </p>
+    {% if user_role != 'vendor' %}
+    <a href="{{ url_for('marketplace.index') }}" class="btn btn-gold">Browse Vendors</a>
+    {% endif %}
+</div>
+{% else %}
+<div class="card">
+    {% for chat in chats %}
+    <a href="{{ url_for('chat.view_chat', chat_id=chat.id) }}" class="text-decoration-none text-dark">
+        <div class="chat-item {% if (user_role == 'vendor' and chat.unread_vendor > 0) or (user_role != 'vendor' and chat.unread_user > 0) %}unread{% endif %}">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">
+                        {% if user_role == 'vendor' %}
+                        {{ chat.user_name }}
+                        {% else %}
+                        {{ chat.business_name }}
+                        {% endif %}
+                    </h6>
+                    <p class="text-muted small mb-1">{{ chat.last_message[:80] }}{% if chat.last_message|length > 80 %}...{% endif %}</p>
+                    <small class="text-muted">{{ chat.last_message_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                </div>
+                <div>
+                    {% if user_role == 'vendor' and chat.unread_vendor > 0 %}
+                    <span class="unread-badge">{{ chat.unread_vendor }}</span>
+                    {% elif user_role != 'vendor' and chat.unread_user > 0 %}
+                    <span class="unread-badge">{{ chat.unread_user }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

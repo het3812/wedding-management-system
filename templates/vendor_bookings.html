@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Bookings - {{ vendor.business_name }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('vendor.dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="mb-4">
+    <h3>Bookings & Orders</h3>
+    <p class="text-muted">Manage your customer bookings</p>
+</div>
+
+{% if not bookings %}
+<div class="card p-5 text-center">
+    <i class="bi bi-calendar-check" style="font-size: 3rem; color: #ccc;"></i>
+    <h5 class="mt-3">No bookings yet</h5>
+    <p class="text-muted">Customers will be able to book your services from your vendor profile</p>
+</div>
+{% else %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Event Date</th>
+                    <th>Booking Date</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td>
+                        <strong>{{ b.customer_name }}</strong><br>
+                        <small class="text-muted">{{ b.customer_email }}</small>
+                    </td>
+                    <td>{{ b.service_title or 'General Inquiry' }}</td>
+                    <td>{{ b.event_date }}</td>
+                    <td>{{ b.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if b.status == 'Confirmed' %}bg-success
+                            {% elif b.status == 'Completed' %}bg-primary
+                            {% elif b.status == 'Cancelled' %}bg-danger
+                            {% else %}bg-warning text-dark{% endif %}">
+                            {{ b.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if b.total_amount %}
+                        ₹{{ "%.2f"|format(b.total_amount) }}
+                        {% else %}
+                        <span class="text-muted">TBD</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                Update Status
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <form method="POST" action="{{ url_for('vendor.update_booking_status', booking_id=b.id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="Confirmed">
+                                        <button type="submit" class="dropdown-item">Confirm</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('vendor.update_booking_status', booking_id=b.id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="Completed">
+                                        <button type="submit" class="dropdown-item">Mark Completed</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('vendor.update_booking_status', booking_id=b.id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="Cancelled">
+                                        <button type="submit" class="dropdown-item text-danger">Cancel</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                        <a href="{{ url_for('chat.start_chat', vendor_id=vendor.id) }}?user={{ b.customer_user_id }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        {% if b.notes %}
+                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#notesModal{{ b.id }}">
+                            <i class="bi bi-file-text"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <!-- Notes Modal -->
+                {% if b.notes %}
+                <div class="modal fade" id="notesModal{{ b.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Booking Notes - {{ b.customer_name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Event Date:</strong> {{ b.event_date }}</p>
+                                <p><strong>Service:</strong> {{ b.service_title or 'General Inquiry' }}</p>
+                                <hr>
+                                <p><strong>Customer Notes:</strong></p>
+                                <p>{{ b.notes }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5>Booking Statistics</h5>
+        <div class="row text-center mt-3">
+            <div class="col-md-3">
+                <div class="h3 text-warning">{{ bookings|selectattr('status', 'equalto', 'Pending')|list|length }}</div>
+                <small class="text-muted">Pending</small>
+            </div>
+            <div class="col-md-3">
+                <div class="h3 text-success">{{ bookings|selectattr('status', 'equalto', 'Confirmed')|list|length }}</div>
+                <small class="text-muted">Confirmed</small>
+            </div>
+            <div class="col-md-3">
+                <div class="h3 text-primary">{{ bookings|selectattr('status', 'equalto', 'Completed')|list|length }}</div>
+                <small class="text-muted">Completed</small>
+            </div>
+            <div class="col-md-3">
+                <div class="h3 text-danger">{{ bookings|selectattr('status', 'equalto', 'Cancelled')|list|length }}</div>
+                <small class="text-muted">Cancelled</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <i class="bi bi-info-circle"></i> 
+    <strong>Important:</strong> Mark bookings as "Completed" after the event to maintain your activity status and allow customers to review your service.
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if service else 'Add' }} Service{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <h4>{{ 'Edit' if service else 'Add' }} Service</h4>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Service Title *</label>
+                    <input type="text" class="form-control" name="title" required value="{{ service.title if service else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="description" rows="3">{{ service.description if service else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Price (₹)</label>
+                    <input type="number" step="0.01" class="form-control" name="price" value="{{ service.price if service and service.price else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Service Image</label>
+                    <input type="file" class="form-control" name="image" accept=".png,.jpg,.jpeg,.gif,.webp">
+                    {% if service and service.image_path %}<small class="text-muted">Current image attached. Upload new to replace.</small>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-gold">Save</button>
+                <a href="{{ url_for('vendor.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

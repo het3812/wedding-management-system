@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Guests - {{ invitation.bride_name }} & {{ invitation.groom_name }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="mb-4">
+    <h3>{{ invitation.bride_name }} & {{ invitation.groom_name }}</h3>
+    <p class="text-muted">Guest Management</p>
+</div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5>Guests ({{ guests|length }})</h5>
+    <a href="{{ url_for('host.add_guest', inv_id=invitation.id) }}" class="btn btn-gold">+ Add Guest</a>
+</div>
+
+{% if not guests %}
+<div class="card p-4 text-center text-muted">No guests yet. Add your first guest.</div>
+{% else %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Category</th>
+                    <th>RSVP Status</th>
+                    <th>Plus One</th>
+                    <th>RSVP Link</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for g in guests %}
+            <tr>
+                <td>
+                    {{ g.name }}
+                    {% if g.rsvp_response %}
+                    <br><small class="text-muted">💬 Has message</small>
+                    {% endif %}
+                </td>
+                <td>{{ g.email or '-' }}</td>
+                <td><span class="badge bg-secondary">{{ g.category }}</span></td>
+                <td>
+                    <span class="badge {% if g.rsvp_status == 'Confirmed' %}bg-success{% elif g.rsvp_status == 'Declined' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                        {{ g.rsvp_status }}
+                    </span>
+                    {% if g.rsvp_submitted_at %}
+                    <br><small class="text-muted">{{ g.rsvp_submitted_at.strftime('%b %d, %Y') }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if g.plus_one %}
+                    <span class="badge bg-info">+1</span>
+                    {% if g.plus_one_name %}
+                    <br><small>{{ g.plus_one_name }}</small>
+                    {% endif %}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if g.rsvp_token %}
+                    <button class="btn btn-sm btn-outline-primary" onclick="copyRSVPLink('{{ request.url_root }}rsvp/{{ g.rsvp_token }}', this)">
+                        📋 Copy Link
+                    </button>
+                    {% else %}
+                    <small class="text-muted">No token</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if g.rsvp_response or g.rsvp_submitted_at %}
+                    <a href="{{ url_for('host.view_guest_rsvp', inv_id=invitation.id, guest_id=g.id) }}" class="btn btn-sm btn-outline-info">View Details</a>
+                    {% endif %}
+                    <a href="{{ url_for('host.edit_guest', inv_id=invitation.id, guest_id=g.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{{ url_for('host.delete_guest', inv_id=invitation.id, guest_id=g.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this guest?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card mt-3 p-3">
+    <h6>RSVP Summary</h6>
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="h3 text-success">{{ guests|selectattr('rsvp_status', 'equalto', 'Confirmed')|list|length }}</div>
+            <small class="text-muted">Confirmed</small>
+        </div>
+        <div class="col-md-4">
+            <div class="h3 text-danger">{{ guests|selectattr('rsvp_status', 'equalto', 'Declined')|list|length }}</div>
+            <small class="text-muted">Declined</small>
+        </div>
+        <div class="col-md-4">
+            <div class="h3 text-warning">{{ guests|selectattr('rsvp_status', 'equalto', 'Pending')|list|length }}</div>
+            <small class="text-muted">Pending</small>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyRSVPLink(url, button) {
+    navigator.clipboard.writeText(url).then(function() {
+        const originalText = button.innerHTML;
+        button.innerHTML = '✓ Copied!';
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-success');
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        alert('Failed to copy link. Please copy manually: ' + url);
+    });
+}
+</script>
+{% endif %}
+{% endblock %}

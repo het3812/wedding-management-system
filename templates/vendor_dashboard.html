@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Vendor Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>{{ vendor.business_name }}</h2>
+        <p class="text-muted">
+            {{ vendor.category or vendor.service_type }} · 
+            {% if vendor.is_blocked %}
+            <span class="badge bg-danger">Blocked</span>
+            {% elif vendor.is_approved %}
+            <span class="badge bg-success">Approved</span>
+            {% else %}
+            <span class="badge bg-warning">Pending Approval</span>
+            {% endif %}
+        </p>
+        <div class="rating-stars" style="color: #ffc107;">
+            {% for i in range(1, 6) %}
+            <i class="bi bi-star{% if i <= vendor.average_rating %}-fill{% endif %}"></i>
+            {% endfor %}
+            <span class="text-muted small">({{ vendor.total_reviews }} reviews)</span>
+        </div>
+    </div>
+    <div>
+        <a href="{{ url_for('vendor.add_service') }}" class="btn btn-gold">+ Add Service</a>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <h6>Total Bookings</h6>
+            <h4>{{ stats.total_bookings or 0 }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <h6>Pending</h6>
+            <h4>{{ stats.pending_bookings or 0 }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <h6>Completed</h6>
+            <h4>{{ stats.completed_bookings or 0 }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <h6>Unread Messages</h6>
+            <h4>{{ unread_chats or 0 }}</h4>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card p-3 mb-4">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('vendor.edit_profile') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil"></i> Edit Profile
+        </a>
+        <a href="{{ url_for('vendor.payment_settings') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-credit-card"></i> Payment Settings
+        </a>
+        <a href="{{ url_for('vendor.gallery') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-images"></i> Manage Gallery
+        </a>
+        <a href="{{ url_for('vendor.reviews') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-star"></i> Reviews ({{ vendor.total_reviews or 0 }})
+        </a>
+        <a href="{{ url_for('vendor.bookings') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-calendar-check"></i> View Bookings
+        </a>
+        <a href="{{ url_for('chat.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-chat-dots"></i> Messages {% if unread_chats > 0 %}<span class="badge bg-danger">{{ unread_chats }}</span>{% endif %}
+        </a>
+        <a href="{{ url_for('marketplace.vendor_profile', vendor_id=vendor.id) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+            <i class="bi bi-eye"></i> View Public Profile
+        </a>
+    </div>
+</div>
+
+<!-- Profile Status -->
+{% if vendor.is_blocked %}
+<div class="alert alert-danger">
+    <h5><i class="bi bi-exclamation-triangle"></i> Account Blocked</h5>
+    <p>{{ vendor.block_reason or 'Your account has been blocked due to inactivity.' }}</p>
+    <p class="mb-0"><strong>Reactivation Fee:</strong> ₹{{ "%.2f"|format(vendor.reactivation_fee) }}</p>
+    <p class="small text-muted">Contact admin to reactivate your account.</p>
+</div>
+{% elif vendor.validity_until %}
+<div class="alert alert-info">
+    <p class="mb-1"><strong>Validity Period Active</strong></p>
+    <p class="mb-1">Valid until: {{ vendor.validity_until.strftime('%B %d, %Y') }}</p>
+    <p class="mb-0">Orders completed in this period: {{ vendor.orders_in_validity }}/3</p>
+    {% if vendor.orders_in_validity < 3 %}
+    <small class="text-muted">Complete at least 3 orders to avoid re-blocking.</small>
+    {% endif %}
+</div>
+{% endif %}
+
+<h5>My Services ({{ services|length }})</h5>
+{% if not services %}
+<div class="card p-4 text-center text-muted">
+    <p>No services yet. Add your first service.</p>
+    <a href="{{ url_for('vendor.add_service') }}" class="btn btn-gold">Add Service</a>
+</div>
+{% else %}
+<div class="row g-3">
+    {% for s in services %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            {% if s.image_path %}
+            <img src="{{ url_for('static', filename=s.image_path) }}" class="card-img-top" style="height:180px;object-fit:cover;" alt="">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:180px;"><i class="bi bi-image text-muted" style="font-size:3rem;"></i></div>
+            {% endif %}
+            <div class="card-body">
+                <h6>{{ s.title }}</h6>
+                {% if s.price %}<p class="mb-1 text-muted">₹{{ "%.2f"|format(s.price) }}</p>{% endif %}
+                <div class="d-flex gap-1">
+                    <a href="{{ url_for('vendor.edit_service', svc_id=s.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{{ url_for('vendor.delete_service', svc_id=s.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this service?')">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

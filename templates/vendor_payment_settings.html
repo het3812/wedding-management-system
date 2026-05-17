@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Settings - {{ vendor.business_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-credit-card"></i> Payment Settings</h2>
+            <a href="{{ url_for('vendor.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4">UPI Payment Settings</h5>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    <!-- UPI ID -->
+                    <div class="mb-3">
+                        <label class="form-label">UPI ID *</label>
+                        <input type="text" name="upi_id" class="form-control" 
+                               value="{{ vendor.upi_id or '' }}" 
+                               placeholder="yourname@paytm or 9876543210@ybl"
+                               required>
+                        <small class="text-muted">Enter your UPI ID for receiving payments</small>
+                    </div>
+
+                    <!-- UPI QR Code -->
+                    <div class="mb-3">
+                        <label class="form-label">UPI QR Code</label>
+                        {% if vendor.upi_qr_code %}
+                        <div class="mb-2">
+                            <img src="{{ url_for('static', filename=vendor.upi_qr_code) }}" 
+                                 alt="UPI QR Code" 
+                                 style="max-width: 200px; border: 1px solid #ddd; padding: 10px; border-radius: 8px;">
+                            <form method="POST" action="{{ url_for('vendor.delete_upi_qr') }}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('Delete UPI QR code?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger ms-2">
+                                    <i class="bi bi-trash"></i> Delete QR Code
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="upi_qr_code" class="form-control" accept="image/*">
+                        <small class="text-muted">Upload your UPI QR code image (PNG, JPG, JPEG)</small>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Bank Details (Optional) -->
+                    <h6 class="mb-3">Bank Account Details (Optional)</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" name="bank_account_name" class="form-control" 
+                               value="{{ vendor.bank_account_name or '' }}" 
+                               placeholder="John Doe">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" name="bank_account_number" class="form-control" 
+                                   value="{{ vendor.bank_account_number or '' }}" 
+                                   placeholder="1234567890">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">IFSC Code</label>
+                            <input type="text" name="bank_ifsc_code" class="form-control" 
+                                   value="{{ vendor.bank_ifsc_code or '' }}" 
+                                   placeholder="SBIN0001234">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" name="bank_name" class="form-control" 
+                               value="{{ vendor.bank_name or '' }}" 
+                               placeholder="State Bank of India">
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Payment Terms -->
+                    <div class="mb-3">
+                        <label class="form-label">Payment Terms & Conditions</label>
+                        <textarea name="payment_terms" class="form-control" rows="4" 
+                                  placeholder="Example: Advance payment: 30% of total amount. Final payment: Before event date.">{{ vendor.payment_terms or '' }}</textarea>
+                        <small class="text-muted">Specify your payment terms for customers</small>
+                    </div>
+
+                    <!-- Accept Online Payment -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="accepts_online_payment" class="form-check-input" 
+                               id="acceptsOnlinePayment" 
+                               {% if vendor.accepts_online_payment %}checked{% endif %}>
+                        <label class="form-check-label" for="acceptsOnlinePayment">
+                            Accept online payments (UPI/Bank Transfer)
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-gold">
+                        <i class="bi bi-save"></i> Save Payment Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Help Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-info-circle"></i> How to Setup</h6>
+                <ol class="small mb-0">
+                    <li class="mb-2">Enter your UPI ID (e.g., yourname@paytm)</li>
+                    <li class="mb-2">Upload your UPI QR code image</li>
+                    <li class="mb-2">Add bank details (optional)</li>
+                    <li class="mb-2">Set payment terms</li>
+                    <li class="mb-2">Enable online payments</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- QR Code Generator -->
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-qr-code"></i> Generate UPI QR Code</h6>
+                <p class="small text-muted">You can generate your UPI QR code using:</p>
+                <ul class="small mb-0">
+                    <li>Google Pay</li>
+                    <li>PhonePe</li>
+                    <li>Paytm</li>
+                    <li>BHIM App</li>
+                    <li>Your bank's app</li>
+                </ul>
+                <hr>
+                <p class="small mb-0">
+                    <strong>Steps:</strong><br>
+                    1. Open your UPI app<br>
+                    2. Go to Profile/Settings<br>
+                    3. Find "QR Code" option<br>
+                    4. Download/Screenshot QR code<br>
+                    5. Upload here
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

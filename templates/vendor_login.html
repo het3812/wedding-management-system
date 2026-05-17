@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Vendor Login{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <div class="text-center mb-3">
+                <h4>Vendor Login</h4>
+                <a href="{{ url_for('index') }}" class="small text-muted">← Back to home</a>
+            </div>
+            <form method="POST" action="{{ url_for('vendor.login') }}">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                <button type="submit" class="btn w-100" style="background: #c9a227; color: white;">Login</button>
+            </form>
+            <p class="text-center small mt-3">Not registered? <a href="{{ url_for('vendor.register') }}">Register as vendor</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Make Payment - {{ booking.business_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-credit-card"></i> Make Payment</h2>
+            <a href="{{ url_for('marketplace.my_bookings') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Bookings
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Booking Details -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Booking Details</h5>
+                <hr>
+                <p class="mb-2"><strong>Vendor:</strong><br>{{ booking.business_name }}</p>
+                <p class="mb-2"><strong>Service:</strong><br>{{ booking.service_title or 'General Booking' }}</p>
+                <p class="mb-2"><strong>Event Date:</strong><br>{{ booking.event_date.strftime('%B %d, %Y') if booking.event_date else 'Not specified' }}</p>
+                <p class="mb-2"><strong>Total Amount:</strong><br>₹{{ "%.2f"|format(booking.total_amount) if booking.total_amount else 'To be decided' }}</p>
+                <p class="mb-2"><strong>Status:</strong><br>
+                    <span class="badge bg-{{ 'success' if booking.status == 'Confirmed' else 'warning' }}">
+                        {{ booking.status }}
+                    </span>
+                </p>
+                <p class="mb-0"><strong>Payment Status:</strong><br>
+                    <span class="badge bg-{{ 'success' if booking.payment_status == 'Fully Paid' else 'warning' }}">
+                        {{ booking.payment_status or 'Pending' }}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Payment Terms -->
+        {% if booking.payment_terms %}
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-info-circle"></i> Payment Terms</h6>
+                <p class="small mb-0">{{ booking.payment_terms }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Payment Form -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Payment Information</h5>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    <!-- Payment Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Payment Type *</label>
+                        <select name="payment_type" class="form-select" required>
+                            <option value="">Select payment type...</option>
+                            <option value="advance" {% if not booking.advance_paid %}selected{% endif %}>
+                                Advance Payment
+                            </option>
+                            <option value="final" {% if booking.advance_paid and not booking.final_paid %}selected{% endif %}>
+                                Final Payment
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="mb-3">
+                        <label class="form-label">Amount (₹) *</label>
+                        <input type="number" name="amount" class="form-control" 
+                               step="0.01" min="0" required
+                               placeholder="Enter amount">
+                        {% if booking.total_amount %}
+                        <small class="text-muted">
+                            Suggested: Advance 30% = ₹{{ "%.2f"|format(booking.total_amount * 0.3) }}, 
+                            Final = ₹{{ "%.2f"|format(booking.total_amount) }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method *</label>
+                        <select name="payment_method" class="form-select" required>
+                            <option value="UPI">UPI</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Transaction ID -->
+                    <div class="mb-3">
+                        <label class="form-label">Transaction ID / Reference Number</label>
+                        <input type="text" name="transaction_id" class="form-control" 
+                               placeholder="Enter UPI transaction ID or reference number">
+                        <small class="text-muted">Optional but recommended for verification</small>
+                    </div>
+
+                    <!-- Payment Proof -->
+                    <div class="mb-3">
+                        <label class="form-label">Payment Proof (Screenshot) *</label>
+                        <input type="file" name="payment_proof" class="form-control" 
+                               accept="image/*" required>
+                        <small class="text-muted">Upload screenshot of payment confirmation</small>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea name="notes" class="form-control" rows="3" 
+                                  placeholder="Any additional notes about the payment..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-gold btn-lg">
+                        <i class="bi bi-check-circle"></i> Submit Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- UPI Payment Section -->
+        {% if booking.accepts_online_payment and booking.upi_id %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-phone"></i> Pay via UPI</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>UPI ID</h6>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" value="{{ booking.upi_id }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" 
+                                    onclick="copyToClipboard('{{ booking.upi_id }}')">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small>
+                                <strong>How to pay:</strong><br>
+                                1. Open your UPI app (Google Pay, PhonePe, Paytm, etc.)<br>
+                                2. Enter UPI ID: <strong>{{ booking.upi_id }}</strong><br>
+                                3. Enter amount and complete payment<br>
+                                4. Take screenshot of confirmation<br>
+                                5. Upload screenshot above
+                            </small>
+                        </div>
+                    </div>
+                    
+                    {% if booking.upi_qr_code %}
+                    <div class="col-md-6 text-center">
+                        <h6>Scan QR Code</h6>
+                        <img src="{{ url_for('static', filename=booking.upi_qr_code) }}" 
+                             alt="UPI QR Code" 
+                             style="max-width: 250px; border: 2px solid var(--wedding-gold); padding: 15px; border-radius: 12px;">
+                        <p class="small text-muted mt-2">Scan with any UPI app to pay</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('UPI ID copied to clipboard!');
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+</script>
+
+{% endblock %}

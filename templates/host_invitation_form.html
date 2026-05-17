@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if invitation else 'Create' }} Invitation{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <h3>{{ 'Edit' if invitation else 'Create' }} Wedding Invitation</h3>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="row g-3 mt-1">
+                    {% if invitation and invitation.profile_image %}
+                    <div class="col-12">
+                        <label class="form-label">Current Profile Image</label>
+                        <div class="mb-2">
+                            <img src="{{ url_for('static', filename=invitation.profile_image) }}" 
+                                 alt="Profile" 
+                                 class="img-thumbnail" 
+                                 style="max-height: 200px; max-width: 100%; object-fit: cover;">
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <label for="profile_image" class="form-label">
+                            Profile Image {{ '(Change)' if invitation and invitation.profile_image else '(Optional)' }}
+                        </label>
+                        <input type="file" class="form-control" id="profile_image" name="profile_image" 
+                               accept=".png,.jpg,.jpeg,.gif,.webp">
+                        <small class="text-muted">Upload a couple photo to identify this invitation. Recommended: 800x600px or larger</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="bride_name" class="form-label">Bride Name *</label>
+                        <input type="text" class="form-control" id="bride_name" name="bride_name" required
+                               value="{{ invitation.bride_name if invitation else '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="groom_name" class="form-label">Groom Name *</label>
+                        <input type="text" class="form-control" id="groom_name" name="groom_name" required
+                               value="{{ invitation.groom_name if invitation else '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="wedding_date" class="form-label">Wedding Date *</label>
+                        <input type="date" class="form-control" id="wedding_date" name="wedding_date" required
+                               value="{{ invitation.wedding_date if invitation else '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label for="venue" class="form-label">Venue *</label>
+                        <input type="text" class="form-control" id="venue" name="venue" required
+                               placeholder="Full venue address"
+                               value="{{ invitation.venue if invitation else '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label for="message" class="form-label">Message (optional)</label>
+                        <textarea class="form-control" id="message" name="message" rows="3"
+                                  placeholder="Personal message for guests">{{ invitation.message if invitation else '' }}</textarea>
+                    </div>
+                    {% if invitation %}
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                   {% if invitation.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">Invitation is active (guests can view)</label>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-gold">Save Invitation</button>
+                        <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

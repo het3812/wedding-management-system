@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+{% block title %}{{ vendor.business_name }} - Vendor Profile{% endblock %}
+{% block extra_css %}
+<style>
+    .back-button-wrapper {
+        margin-bottom: 1rem;
+    }
+    .vendor-header {
+        background: linear-gradient(135deg, #fdf8f3 0%, #f5e6d3 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    .rating-stars { color: #ffc107; font-size: 1.2rem; }
+    .gallery-img {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .gallery-img:hover { transform: scale(1.05); }
+    .service-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .review-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    .vendor-response {
+        background: #f8f9fa;
+        border-left: 4px solid var(--wedding-gold);
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 4px;
+    }
+    .social-links a {
+        color: var(--wedding-gold);
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    .rating-input {
+        display: inline-flex;
+        flex-direction: row;
+        font-size: 2rem;
+        gap: 5px;
+    }
+    .rating-input input { 
+        display: none; 
+    }
+    .rating-input label {
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .rating-input label:hover {
+        color: #ffc107;
+    }
+    .rating-input label.active {
+        color: #ffc107;
+    }
+    .helpful-btn {
+        border: none;
+        background: none;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    .helpful-btn:hover {
+        background: #f8f9fa;
+        color: #495057;
+    }
+    .helpful-btn.active {
+        color: var(--wedding-gold);
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('marketplace.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Marketplace
+    </a>
+</div>
+
+<!-- Vendor Header -->
+<div class="vendor-header">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>{{ vendor.business_name }}</h2>
+            <p class="lead mb-2">{{ vendor.category }}</p>
+            
+            <div class="rating-stars mb-3">
+                {% for i in range(1, 6) %}
+                <i class="bi bi-star{% if i <= vendor.average_rating %}-fill{% endif %}"></i>
+                {% endfor %}
+                <span class="text-muted">({{ total_reviews }} review{{ 's' if total_reviews != 1 else '' }})</span>
+            </div>
+            
+            {% if vendor.city %}
+            <p class="mb-2"><i class="bi bi-geo-alt"></i> {{ vendor.city }}{% if vendor.area %}, {{ vendor.area }}{% endif %}{% if vendor.state %}, {{ vendor.state }}{% endif %}</p>
+            {% endif %}
+            
+            <p class="mb-2"><i class="bi bi-envelope"></i> {{ vendor.contact_email }}</p>
+            {% if vendor.contact_phone %}
+            <p class="mb-2"><i class="bi bi-telephone"></i> {{ vendor.contact_phone }}</p>
+            {% endif %}
+            
+            <div class="social-links mt-3">
+                {% if vendor.website_url %}
+                <a href="{{ vendor.website_url }}" target="_blank" title="Website"><i class="bi bi-globe"></i></a>
+                {% endif %}
+                {% if vendor.instagram_url %}
+                <a href="{{ vendor.instagram_url }}" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('marketplace.book_vendor', vendor_id=vendor.id) }}" class="btn btn-gold btn-lg mb-2 w-100">
+                <i class="bi bi-calendar-check"></i> Book Now
+            </a>
+            {% if session.user_id %}
+            <a href="{{ url_for('chat.start_chat', vendor_id=vendor.id) }}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-chat-dots"></i> Chat with Vendor
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Description -->
+{% if vendor.description %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5>About</h5>
+        <p>{{ vendor.description }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Services -->
+{% if services %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Services Offered</h5>
+        <div class="row">
+            {% for s in services %}
+            <div class="col-md-6">
+                <div class="service-card">
+                    {% if s.image_path %}
+                    <img src="{{ url_for('static', filename=s.image_path) }}" class="img-fluid mb-2" style="max-height: 150px; width: 100%; object-fit: cover; border-radius: 8px;" alt="{{ s.title }}">
+                    {% endif %}
+                    <h6>{{ s.title }}</h6>
+                    {% if s.description %}
+                    <p class="small text-muted">{{ s.description }}</p>
+                    {% endif %}
+                    {% if s.price %}
+                    <p class="mb-0"><strong>₹{{ "%.2f"|format(s.price) }}</strong></p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Gallery -->
+{% if gallery %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Portfolio Gallery</h5>
+        <div class="row g-3">
+            {% for img in gallery %}
+            <div class="col-md-4 col-sm-6">
+                <img src="{{ url_for('static', filename=img.image_path) }}" class="img-fluid gallery-img" alt="{{ img.caption or 'Gallery image' }}" onclick="viewImage('{{ url_for('static', filename=img.image_path) }}')">
+                {% if img.caption %}
+                <p class="small text-muted mt-1">{{ img.caption }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Reviews Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0"><i class="bi bi-star-fill text-warning"></i> Customer Reviews</h5>
+            {% if session.user_id and user_booking %}
+            <button class="btn btn-gold" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                <i class="bi bi-pencil"></i> {{ 'Edit Review' if user_review else 'Write Review' }}
+            </button>
+            {% endif %}
+        </div>
+        
+        <!-- Rating Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3 text-center">
+                <h1 class="display-3 mb-0">{{ "%.1f"|format(vendor.average_rating or 0) }}</h1>
+                <div class="rating-stars mb-2">
+                    {% for i in range(1, 6) %}
+                    <i class="bi bi-star{% if i <= vendor.average_rating %}-fill{% endif %}"></i>
+                    {% endfor %}
+                </div>
+                <p class="text-muted mb-0">{{ total_reviews }} review{{ 's' if total_reviews != 1 else '' }}</p>
+            </div>
+            <div class="col-md-9">
+                <h6 class="mb-3">Rating Distribution</h6>
+                {% for rating in [5, 4, 3, 2, 1] %}
+                <div class="d-flex align-items-center mb-2">
+                    <span class="me-2" style="min-width: 60px;">{{ rating }} <i class="bi bi-star-fill text-warning"></i></span>
+                    <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                        {% set count = rating_distribution.get(rating, 0) %}
+                        {% set percentage = (count / total_reviews * 100) if total_reviews > 0 else 0 %}
+                        <div class="progress-bar bg-warning" style="width: {{ percentage }}%"></div>
+                    </div>
+                    <span class="text-muted" style="min-width: 40px;">{{ rating_distribution.get(rating, 0) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Review Filters -->
+        {% if reviews %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <select class="form-select" onchange="window.location.href='?rating_filter=' + this.value + '&sort_by={{ sort_by }}'">
+                    <option value="">All Ratings</option>
+                    {% for r in [5, 4, 3, 2, 1] %}
+                    <option value="{{ r }}" {% if rating_filter == r|string %}selected{% endif %}>
+                        {{ r }} Star{{ 's' if r != 1 else '' }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <select class="form-select" onchange="window.location.href='?rating_filter={{ rating_filter }}&sort_by=' + this.value">
+                    <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                    <option value="helpful" {% if sort_by == 'helpful' %}selected{% endif %}>Most Helpful</option>
+                    <option value="rating_high" {% if sort_by == 'rating_high' %}selected{% endif %}>Highest Rating</option>
+                    <option value="rating_low" {% if sort_by == 'rating_low' %}selected{% endif %}>Lowest Rating</option>
+                </select>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Reviews List -->
+        {% if not reviews %}
+        <div class="text-center py-5">
+            <i class="bi bi-star display-1 text-muted"></i>
+            <h5 class="mt-3">No Reviews Yet</h5>
+            <p class="text-muted">Be the first to review this vendor!</p>
+        </div>
+        {% else %}
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <h6 class="mb-1">
+                        {{ review.reviewer_name }}
+                        {% if review.is_verified_booking %}
+                        <span class="badge bg-success ms-2">
+                            <i class="bi bi-check-circle"></i> Verified Booking
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="rating-stars" style="font-size: 1rem;">
+                        {% for i in range(1, 6) %}
+                        <i class="bi bi-star{% if i <= review.rating %}-fill{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted">
+                        {{ review.created_at.strftime('%B %d, %Y') }}
+                        {% if review.updated_at and review.updated_at != review.created_at %}
+                        (Updated)
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="text-end">
+                    {% if session.user_id and session.user_id == review.user_id %}
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('marketplace.delete_review', review_id=review.id) }}" 
+                                      onsubmit="return confirm('Delete this review?')">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if review.review_text %}
+            <p class="mb-3">{{ review.review_text }}</p>
+            {% endif %}
+            
+            <!-- Vendor Response -->
+            {% if review.vendor_response %}
+            <div class="vendor-response">
+                <strong><i class="bi bi-shop"></i> Vendor Response:</strong>
+                <p class="mb-1 mt-2">{{ review.vendor_response }}</p>
+                <small class="text-muted">{{ review.vendor_response_date.strftime('%B %d, %Y') }}</small>
+            </div>
+            {% endif %}
+            
+            <!-- Helpful Buttons -->
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <div>
+                    <span class="text-muted small">Was this review helpful?</span>
+                    {% if session.user_id %}
+                    <button class="helpful-btn ms-2" onclick="markHelpful({{ review.id }}, 1)">
+                        <i class="bi bi-hand-thumbs-up"></i> Helpful (<span id="helpful-{{ review.id }}">{{ review.helpful_count or 0 }}</span>)
+                    </button>
+                    <button class="helpful-btn" onclick="markHelpful({{ review.id }}, 0)">
+                        <i class="bi bi-hand-thumbs-down"></i> Not Helpful (<span id="unhelpful-{{ review.id }}">{{ review.unhelpful_count or 0 }}</span>)
+                    </button>
+                    {% else %}
+                    <span class="ms-2 text-muted small">
+                        <i class="bi bi-hand-thumbs-up"></i> {{ review.helpful_count or 0 }} helpful
+                    </span>
+                    {% endif %}
+                </div>
+                {% if session.user_id and session.user_id != review.user_id %}
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reportModal{{ review.id }}">
+                    <i class="bi bi-flag"></i> Report
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Report Modal -->
+        <div class="modal fade" id="reportModal{{ review.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('marketplace.report_review', review_id=review.id) }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Report Review</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Reason</label>
+                                <select name="reason" class="form-select" required>
+                                    <option value="">Select a reason...</option>
+                                    <option value="Spam">Spam</option>
+                                    <option value="Offensive">Offensive Language</option>
+                                    <option value="Fake">Fake Review</option>
+                                    <option value="Irrelevant">Irrelevant Content</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Additional Details (Optional)</label>
+                                <textarea name="description" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Submit Report</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ 'Edit Your Review' if user_review else 'Write a Review' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('marketplace.add_review', vendor_id=vendor.id) }}">
+                <div class="modal-body">
+                    {% if not user_booking %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> You can write a review after completing a booking with this vendor.
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Rating *</label>
+                        <div class="rating-input">
+                            {% for i in range(1, 6) %}
+                            <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" 
+                                   {% if user_review and user_review.rating == i %}checked{% endif %} required>
+                            <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Your Review (Optional)</label>
+                        <textarea class="form-control" name="review_text" rows="4" 
+                                  placeholder="Share your experience with this vendor...">{% if user_review %}{{ user_review.review_text }}{% endif %}</textarea>
+                        <small class="text-muted">Be honest and helpful to other customers.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-gold">{{ 'Update Review' if user_review else 'Submit Review' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewImage(url) {
+    window.open(url, '_blank');
+}
+
+function markHelpful(reviewId, isHelpful) {
+    fetch(`/marketplace/review/${reviewId}/helpful`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `is_helpful=${isHelpful}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`helpful-${reviewId}`).textContent = data.helpful;
+            document.getElementById(`unhelpful-${reviewId}`).textContent = data.unhelpful;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Star Rating System
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingInputs = document.querySelectorAll('.rating-input');
+    
+    ratingInputs.forEach(ratingInput => {
+        const stars = ratingInput.querySelectorAll('label');
+        const inputs = ratingInput.querySelectorAll('input');
+        
+        // Initialize - highlight stars based on checked input
+        function updateStars() {
+            const checkedInput = ratingInput.querySelector('input:checked');
+            const checkedValue = checkedInput ? parseInt(checkedInput.value) : 0;
+            
+            stars.forEach((star, index) => {
+                if (index < checkedValue) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+        
+        // Add click handlers
+        stars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const input = inputs[index];
+                input.checked = true;
+                updateStars();
+            });
+            
+            // Hover effect
+            star.addEventListener('mouseenter', function() {
+                stars.forEach((s, i) => {
+                    if (i <= index) {
+                        s.style.color = '#ffc107';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        });
+        
+        // Reset on mouse leave
+        ratingInput.addEventListener('mouseleave', function() {
+            updateStars();
+        });
+        
+        // Initial update
+        updateStars();
+    });
+});
+</script>
+{% endblock %}

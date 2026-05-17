@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile - {{ vendor.business_name }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('vendor.dashboard') }}" class="text-muted text-decoration-none">&larr; Back to Dashboard</a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mb-4">Edit Vendor Profile</h4>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Business Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="business_name" value="{{ vendor.business_name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Photographer" {% if vendor.category == 'Photographer' %}selected{% endif %}>Photographer</option>
+                            <option value="Clothes/Boutique" {% if vendor.category == 'Clothes/Boutique' %}selected{% endif %}>Clothes/Boutique</option>
+                            <option value="Party Plot" {% if vendor.category == 'Party Plot' %}selected{% endif %}>Party Plot</option>
+                            <option value="Car Booking" {% if vendor.category == 'Car Booking' %}selected{% endif %}>Car Booking</option>
+                            <option value="Makeup Artist" {% if vendor.category == 'Makeup Artist' %}selected{% endif %}>Makeup Artist</option>
+                            <option value="Mehendi Artist" {% if vendor.category == 'Mehendi Artist' %}selected{% endif %}>Mehendi Artist</option>
+                            <option value="Pandit" {% if vendor.category == 'Pandit' %}selected{% endif %}>Pandit</option>
+                            <option value="Catering" {% if vendor.category == 'Catering' %}selected{% endif %}>Catering</option>
+                            <option value="Decoration" {% if vendor.category == 'Decoration' %}selected{% endif %}>Decoration</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="4" placeholder="Tell customers about your business, experience, and what makes you special...">{{ vendor.description or '' }}</textarea>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Contact Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Contact Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" name="contact_email" value="{{ vendor.contact_email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Contact Phone</label>
+                            <input type="tel" class="form-control" name="contact_phone" value="{{ vendor.contact_phone or '' }}" placeholder="+91 1234567890">
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Social Media & Website</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Website URL</label>
+                        <input type="url" class="form-control" name="website_url" value="{{ vendor.website_url or '' }}" placeholder="https://yourwebsite.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Instagram Profile</label>
+                        <input type="url" class="form-control" name="instagram_url" value="{{ vendor.instagram_url or '' }}" placeholder="https://instagram.com/yourprofile">
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Service Location</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" name="city" value="{{ vendor.city or '' }}" placeholder="Mumbai">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Area</label>
+                            <input type="text" class="form-control" name="area" value="{{ vendor.area or '' }}" placeholder="Andheri West">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control" name="state" value="{{ vendor.state or '' }}" placeholder="Maharashtra">
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Tip:</strong> Complete your profile to attract more customers. Add your location, social media links, and a detailed description.
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-gold">Save Profile</button>
+                        <a href="{{ url_for('vendor.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Profile Completion</h6>
+                <div class="progress mb-2" style="height: 20px;">
+                    {% set completion = 0 %}
+                    {% if vendor.business_name %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.category %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.description %}{% set completion = completion + 15 %}{% endif %}
+                    {% if vendor.contact_email %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.contact_phone %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.website_url %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.instagram_url %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.city %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.state %}{% set completion = completion + 10 %}{% endif %}
+                    {% if vendor.area %}{% set completion = completion + 5 %}{% endif %}
+                    <div class="progress-bar bg-success" style="width: {{ completion }}%">{{ completion }}%</div>
+                </div>
+                <small class="text-muted">Complete your profile to increase visibility</small>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>Quick Tips</h6>
+                <ul class="small mb-0">
+                    <li>Add a detailed description</li>
+                    <li>Include your location</li>
+                    <li>Link your Instagram for credibility</li>
+                    <li>Upload portfolio images in Gallery</li>
+                    <li>Keep contact info updated</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

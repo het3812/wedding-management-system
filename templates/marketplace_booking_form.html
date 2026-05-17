@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Book {{ vendor.business_name }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('marketplace.vendor_profile', vendor_id=vendor.id) }}" class="text-muted text-decoration-none">&larr; Back to Vendor Profile</a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mb-4">Book {{ vendor.business_name }}</h4>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Select Service (Optional)</label>
+                        <select class="form-select" name="service_id" id="serviceSelect">
+                            <option value="">General Inquiry</option>
+                            {% for s in services %}
+                            <option value="{{ s.id }}" data-price="{{ s.price or 0 }}">
+                                {{ s.title }}{% if s.price %} - ₹{{ "%.2f"|format(s.price) }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Event Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="event_date" required min="{{ today }}">
+                        <small class="text-muted">When do you need this service?</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Additional Notes</label>
+                        <textarea class="form-control" name="notes" rows="4" placeholder="Tell the vendor about your requirements, preferences, or any special requests..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Note:</strong> This is a booking request. The vendor will contact you to confirm availability and finalize details.
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-gold">Send Booking Request</button>
+                        <a href="{{ url_for('marketplace.vendor_profile', vendor_id=vendor.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Vendor Details</h5>
+                <hr>
+                <p><strong>{{ vendor.business_name }}</strong></p>
+                <p class="text-muted mb-2">{{ vendor.category }}</p>
+                
+                {% if vendor.city %}
+                <p class="small mb-2">
+                    <i class="bi bi-geo-alt"></i> {{ vendor.city }}{% if vendor.state %}, {{ vendor.state }}{% endif %}
+                </p>
+                {% endif %}
+                
+                <p class="small mb-2">
+                    <i class="bi bi-envelope"></i> {{ vendor.contact_email }}
+                </p>
+                
+                {% if vendor.contact_phone %}
+                <p class="small mb-2">
+                    <i class="bi bi-telephone"></i> {{ vendor.contact_phone }}
+                </p>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="rating-stars mb-2" style="color: #ffc107;">
+                    {% for i in range(1, 6) %}
+                    <i class="bi bi-star{% if i <= vendor.average_rating %}-fill{% endif %}"></i>
+                    {% endfor %}
+                    <span class="text-muted small">({{ vendor.total_reviews }})</span>
+                </div>
+                
+                <a href="{{ url_for('chat.start_chat', vendor_id=vendor.id) }}" class="btn btn-outline-secondary btn-sm w-100 mt-3">
+                    <i class="bi bi-chat-dots"></i> Chat with Vendor
+                </a>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>What happens next?</h6>
+                <ol class="small mb-0">
+                    <li>You submit the booking request</li>
+                    <li>Vendor receives notification</li>
+                    <li>Vendor contacts you to confirm</li>
+                    <li>Finalize details and pricing</li>
+                    <li>Enjoy your event!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelector('input[type="date"]').setAttribute('min', today);
+});
+</script>
+{% endblock %}

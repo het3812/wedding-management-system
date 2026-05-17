@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if event else 'Add' }} Event{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card p-4">
+            <h4>{{ 'Edit' if event else 'Add' }} Wedding Event</h4>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Event Name *</label>
+                    <input type="text" class="form-control" name="event_name" placeholder="e.g. Haldi, Mehndi, Wedding, Reception" required value="{{ event.event_name if event else '' }}">
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">Date *</label>
+                        <input type="date" class="form-control" name="event_date" required value="{{ event.event_date if event else '' }}">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Time</label>
+                        <input type="time" class="form-control" name="event_time" value="{{ event.time_value if event and event.get('time_value') else '' }}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-2">
+                    <label class="form-label">Venue *</label>
+                    <input type="text" class="form-control" name="venue" required value="{{ event.venue if event else '' }}">
+                </div>
+                <button type="submit" class="btn btn-gold">Save</button>
+                <a href="{{ url_for('admin.manage_events', inv_id=invitation.id) }}" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Upload Images - {{ invitation.bride_name }} & {{ invitation.groom_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ url_for('admin.dashboard') }}" class="text-muted text-decoration-none">&larr; Dashboard</a>
+        <h3 class="mt-2">{{ invitation.bride_name }} & {{ invitation.groom_name }}</h3>
+        <p class="text-muted">Upload wedding photos</p>
+    </div>
+    <a href="{{ url_for('gallery.view_gallery', token=invitation.invite_token) }}" class="btn btn-outline-primary" target="_blank">
+        View Gallery
+    </a>
+</div>
+
+<div class="card p-4 mb-4">
+    <h5>Upload Images</h5>
+    <p class="text-muted small">Allowed: PNG, JPG, JPEG, GIF, WEBP. Max 16MB per file. Use album name for grouping.</p>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Album Name (optional)</label>
+            <input type="text" class="form-control" name="album_name" placeholder="e.g. Pre-wedding, Ceremony, Reception">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Select Images</label>
+            <input type="file" class="form-control" name="images" accept=".png,.jpg,.jpeg,.gif,.webp" multiple>
+        </div>
+        <button type="submit" class="btn btn-gold">Upload</button>
+    </form>
+</div>
+
+{% if images %}
+<h5>Uploaded Images ({{ images|length }})</h5>
+<div class="row g-3">
+    {% for img in images %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card">
+            <img src="{{ url_for('static', filename=img.image_path) }}" class="card-img-top" alt="Wedding" style="height:180px;object-fit:cover;">
+            <div class="card-body py-2">
+                <a href="{{ url_for('admin.delete_image', inv_id=invitation.id, img_id=img.id) }}"
+                   class="btn btn-sm btn-outline-danger w-100"
+                   onclick="return confirm('Delete this image?')">Delete</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No images uploaded yet.</p>
+{% endif %}
+{% endblock %}

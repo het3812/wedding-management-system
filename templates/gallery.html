@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery - {{ invitation.bride_name }} & {{ invitation.groom_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .gallery-header { background: white; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .gallery-header h2 { color: #c9a227; margin: 0; }
+        .gallery-img { width: 100%; height: 250px; object-fit: cover; border-radius: 8px; }
+        .gallery-item { margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="gallery-header">
+        <div class="container">
+            <h2>📷 {{ invitation.bride_name }} & {{ invitation.groom_name }}</h2>
+            <p class="text-muted mb-0">Wedding Photo Gallery</p>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        {% if albums %}
+        {% for album_name, album_images in albums.items() %}
+        <h5 class="mt-4 mb-2" style="color:#c9a227;">{{ album_name }}</h5>
+        <div class="row g-4">
+            {% for img in album_images %}
+            <div class="col-6 col-md-4 col-lg-3 gallery-item">
+                <a href="{{ url_for('static', filename=img.image_path) }}" target="_blank" data-img="{{ url_for('static', filename=img.image_path) }}">
+                    <img src="{{ url_for('static', filename=img.image_path) }}" class="gallery-img" alt="Wedding photo">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        {% elif images %}
+        <div class="row g-4">
+            {% for img in images %}
+            <div class="col-6 col-md-4 col-lg-3 gallery-item">
+                <a href="{{ url_for('static', filename=img.image_path) }}" target="_blank" data-img="{{ url_for('static', filename=img.image_path) }}">
+                    <img src="{{ url_for('static', filename=img.image_path) }}" class="gallery-img" alt="Wedding photo">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <p>No photos in this gallery yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Simple lightbox: open image in new tab on click -->
+    <script>
+        document.querySelectorAll('[data-img]').forEach(el => {
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open(this.getAttribute('data-img'), '_blank');
+            });
+        });
+    </script>
+</body>
+</html>

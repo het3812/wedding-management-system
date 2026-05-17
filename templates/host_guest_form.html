@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if guest else 'Add' }} Guest{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-5">
+        <div class="card p-4">
+            <h4>{{ 'Edit' if guest else 'Add' }} Guest</h4>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Name *</label>
+                    <input type="text" class="form-control" name="name" required value="{{ guest.name if guest else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" value="{{ guest.email if guest else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control" name="phone" value="{{ guest.phone if guest else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category">
+                        <option value="Family" {% if guest and guest.category == 'Family' %}selected{% endif %}>Family</option>
+                        <option value="Friend" {% if guest and guest.category == 'Friend' %}selected{% endif %}>Friend</option>
+                        <option value="VIP" {% if guest and guest.category == 'VIP' %}selected{% endif %}>VIP</option>
+                    </select>
+                </div>
+                {% if guest %}
+                <div class="mb-3">
+                    <label class="form-label">RSVP Status</label>
+                    <select class="form-select" name="rsvp_status">
+                        <option value="Pending" {% if guest.rsvp_status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Confirmed" {% if guest.rsvp_status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+                        <option value="Declined" {% if guest.rsvp_status == 'Declined' %}selected{% endif %}>Declined</option>
+                    </select>
+                </div>
+                {% endif %}
+                <button type="submit" class="btn btn-gold">Save</button>
+                <a href="{{ url_for('host.manage_guests', inv_id=invitation.id) }}" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

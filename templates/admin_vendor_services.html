@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Services - {{ vendor.business_name }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('admin.list_vendors') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Vendors
+    </a>
+</div>
+
+<div class="mb-4">
+    <h3>{{ vendor.business_name }}</h3>
+    <p class="text-muted">{{ vendor.service_type }} · {{ vendor.user_name }}</p>
+</div>
+
+<h5>Services ({{ services|length }})</h5>
+{% if not services %}
+<div class="card p-4 text-center text-muted">No services uploaded.</div>
+{% else %}
+<div class="row g-3">
+    {% for s in services %}
+    <div class="col-md-4">
+        <div class="card">
+            {% if s.image_path %}
+            <img src="{{ url_for('static', filename=s.image_path) }}" class="card-img-top" style="height:150px;object-fit:cover;" alt="">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:150px;"><i class="bi bi-image text-muted"></i></div>
+            {% endif %}
+            <div class="card-body">
+                <h6>{{ s.title }}</h6>
+                {% if s.price %}<p class="text-muted mb-0">₹{{ "%.2f"|format(s.price) }}</p>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

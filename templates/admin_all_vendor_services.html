@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}All Vendor Services{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('admin.list_vendors') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Vendors
+    </a>
+</div>
+
+<div class="mb-4">
+    <h3>All Vendor Services</h3>
+    <p class="text-muted">Complete list of services uploaded by all vendors.</p>
+</div>
+
+{% if not services %}
+<div class="card p-4 text-center text-muted">No vendor services yet.</div>
+{% else %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Vendor / Business</th>
+                    <th>Service Type</th>
+                    <th>Service Title</th>
+                    <th>Price</th>
+                    <th>Added</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for s in services %}
+            <tr>
+                <td>
+                    <strong>{{ s.business_name }}</strong><br>
+                    <small class="text-muted">{{ s.vendor_user_name }}</small>
+                </td>
+                <td>{{ s.service_type }}</td>
+                <td>{{ s.title }}</td>
+                <td>{% if s.price is not none %}₹{{ "%.2f"|format(s.price) }}{% else %}-{% endif %}</td>
+                <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '-' }}</td>
+                <td>
+                    {% if s.is_approved %}<span class="badge bg-success">Approved</span>
+                    {% else %}<span class="badge bg-warning">Pending</span>{% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.view_vendor_services', vendor_id=s.vendor_id) }}" class="btn btn-sm btn-outline-primary">View Vendor</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

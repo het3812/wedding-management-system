@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Invitation - {{ invitation.bride_name }} & {{ invitation.groom_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fdf8f3 0%, #f5e6d3 100%);
+            font-family: 'Georgia', serif;
+        }
+        
+        /* Header Section */
+        .invitation-header {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: white;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 4px solid #c9a227;
+            border-radius: 50%;
+            margin-bottom: 1.5rem;
+        }
+        .couple-names {
+            font-size: 2.5rem;
+            color: #c9a227;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+        .wedding-info {
+            font-size: 1.1rem;
+            color: #666;
+            margin: 0.5rem 0;
+        }
+        .message-text {
+            font-style: italic;
+            color: #555;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Navigation Tabs */
+        .nav-tabs {
+            border-bottom: 2px solid #c9a227;
+            margin-bottom: 2rem;
+        }
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+        }
+        .nav-tabs .nav-link.active {
+            color: #c9a227;
+            background: transparent;
+            border-bottom: 3px solid #c9a227;
+            font-weight: 600;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #c9a227;
+            border: none;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem 3rem;
+        }
+        .section-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+        
+        /* Events Schedule */
+        .event-item {
+            padding: 1.5rem;
+            background: #fdf8f3;
+            border-left: 4px solid #c9a227;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .event-name {
+            font-size: 1.3rem;
+            color: #c9a227;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .event-details {
+            color: #666;
+            margin: 0.3rem 0;
+        }
+        
+        /* RSVP Form */
+        .rsvp-options {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .rsvp-option {
+            flex: 1;
+            padding: 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .rsvp-option:hover {
+            border-color: #c9a227;
+            background: #fdf8f3;
+            transform: translateY(-2px);
+        }
+        .rsvp-option.selected {
+            border-color: #c9a227;
+            background: #fdf8f3;
+        }
+        .rsvp-option input[type="radio"] {
+            display: none;
+        }
+        .rsvp-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .btn-submit {
+            background: #c9a227;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+        .btn-submit:hover {
+            background: #b8921f;
+            color: white;
+        }
+        .plus-one-section {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        /* Guest Count Selector */
+        .guest-count-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .guest-count-input {
+            width: 80px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #c9a227;
+            border: 2px solid #c9a227;
+            background: white;
+        }
+        .btn-count {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #c9a227;
+            background: white;
+            color: #c9a227;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-count:hover {
+            background: #c9a227;
+            color: white;
+            transform: scale(1.1);
+        }
+        .btn-count:active {
+            transform: scale(0.95);
+        }
+        .form-range {
+            accent-color: #c9a227;
+        }
+        .form-range::-webkit-slider-thumb {
+            background: #c9a227;
+        }
+        .form-range::-moz-range-thumb {
+            background: #c9a227;
+        }
+        
+        /* Gallery */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+            aspect-ratio: 1;
+        }
+        .gallery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .gallery-item:hover .gallery-img {
+            transform: scale(1.1);
+        }
+        .album-title {
+            color: #c9a227;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0e6d2;
+        }
+        
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            z-index: 10000;
+        }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 50px;
+            cursor: pointer;
+            padding: 20px;
+            user-select: none;
+        }
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .couple-names {
+                font-size: 2rem;
+            }
+            .rsvp-options {
+                flex-direction: column;
+            }
+            .nav-tabs .nav-link {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="invitation-header">
+        {% if invitation.profile_image %}
+        <img src="{{ url_for('static', filename=invitation.profile_image) }}" 
+             alt="{{ invitation.bride_name }} & {{ invitation.groom_name }}" 
+             class="profile-image">
+        {% endif %}
+        <p class="text-muted">You're invited to celebrate</p>
+        <h1 class="couple-names">{{ invitation.bride_name }} & {{ invitation.groom_name }}</h1>
+        <p class="wedding-info">📅 {{ invitation.wedding_date }}</p>
+        <p class="wedding-info">📍 {{ invitation.venue }}</p>
+        {% if invitation.message %}
+        <div class="message-text">{{ invitation.message }}</div>
+        {% endif %}
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="container">
+        <ul class="nav nav-tabs justify-content-center" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#events">
+                    <i class="bi bi-calendar-event"></i> Events
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#rsvp">
+                    <i class="bi bi-envelope-heart"></i> RSVP
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#gallery">
+                    <i class="bi bi-images"></i> Gallery
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Content Sections -->
+    <div class="content-section">
+        <div class="tab-content">
+            <!-- Events Tab -->
+            <div class="tab-pane fade show active" id="events">
+                <div class="section-card">
+                    <h3 style="color: #c9a227; margin-bottom: 1.5rem;">
+                        <i class="bi bi-calendar-event"></i> Event Schedule
+                    </h3>
+                    {% if events %}
+                        {% for e in events %}
+                        <div class="event-item">
+                            <div class="event-name">{{ e.event_name }}</div>
+                            <div class="event-details">
+                                <i class="bi bi-calendar3"></i> {{ e.event_date }}
+                                {% if e.time_display %}
+                                <i class="bi bi-clock ms-3"></i> {{ e.time_display }}
+                                {% endif %}
+                            </div>
+                            <div class="event-details">
+                                <i class="bi bi-geo-alt"></i> {{ e.venue }}
+                            </div>
+                            {% if e.description %}
+                            <div class="event-details mt-2">
+                                <small>{{ e.description }}</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">Event schedule will be updated soon.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- RSVP Tab -->
+            <div class="tab-pane fade" id="rsvp">
+                <div class="section-card">
+                    <h3 style="color: #c9a227; margin-bottom: 1.5rem;">
+                        <i class="bi bi-envelope-heart"></i> RSVP
+                    </h3>
+                    
+                    {% if guest %}
+                        <!-- Personalized RSVP for invited guests -->
+                        <div class="alert alert-info mb-4">
+                            <strong>Dear {{ guest.name }},</strong><br>
+                            Please confirm your attendance below.
+                        </div>
+
+                        {% if guest.rsvp_submitted_at %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i> <strong>You have already responded!</strong><br>
+                            Status: <strong>{{ guest.rsvp_status }}</strong><br>
+                            <small>Submitted on {{ guest.rsvp_submitted_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                            <hr>
+                            <p class="mb-0">You can update your response below if needed.</p>
+                        </div>
+                        {% endif %}
+
+                        <form method="POST" action="{{ url_for('rsvp.submit_rsvp', token=guest.rsvp_token) }}" id="rsvpForm">
+                            <h5 class="mb-3">Will you be attending?</h5>
+                            
+                            <div class="rsvp-options">
+                                <div class="rsvp-option {% if guest.rsvp_status == 'Confirmed' %}selected{% endif %}" onclick="selectRSVP('Confirmed', this)">
+                                    <input type="radio" name="rsvp_status" value="Confirmed" id="confirm" {% if guest.rsvp_status == 'Confirmed' %}checked{% endif %}>
+                                    <label for="confirm" style="cursor: pointer; display: block;">
+                                        <div class="rsvp-icon">✓</div>
+                                        <div>Yes, I'll be there!</div>
+                                    </label>
+                                </div>
+                                
+                                <div class="rsvp-option {% if guest.rsvp_status == 'Declined' %}selected{% endif %}" onclick="selectRSVP('Declined', this)">
+                                    <input type="radio" name="rsvp_status" value="Declined" id="decline" {% if guest.rsvp_status == 'Declined' %}checked{% endif %}>
+                                    <label for="decline" style="cursor: pointer; display: block;">
+                                        <div class="rsvp-icon">✗</div>
+                                        <div>Sorry, can't make it</div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="guest_count" class="form-label"><strong>How many people are coming with you?</strong></label>
+                                <p class="text-muted small mb-2">Including yourself</p>
+                                <div class="guest-count-selector">
+                                    <button type="button" class="btn-count" onclick="decrementGuests()">-</button>
+                                    <input type="number" class="form-control guest-count-input" id="guest_count" name="guest_count" 
+                                           value="{{ guest.guest_count or 1 }}" min="1" max="10" readonly>
+                                    <button type="button" class="btn-count" onclick="incrementGuests()">+</button>
+                                </div>
+                                <input type="range" class="form-range mt-3" id="guest_count_slider" 
+                                       min="1" max="10" value="{{ guest.guest_count or 1 }}" 
+                                       oninput="updateGuestCount(this.value)">
+                                <small class="text-muted">Use slider or +/- buttons to select</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="rsvp_response" class="form-label">Message to the couple (optional)</label>
+                                <textarea class="form-control" id="rsvp_response" name="rsvp_response" 
+                                          rows="4" placeholder="Share your wishes or dietary requirements...">{{ guest.rsvp_response or '' }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-submit">
+                                <i class="bi bi-send"></i> Submit RSVP
+                            </button>
+                        </form>
+                    {% else %}
+                        <!-- General RSVP form for anyone with invitation link -->
+                        <div class="alert alert-info mb-4">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Please provide your details to RSVP</strong>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('invitation.submit_general_rsvp', token=invitation.invite_token) }}" id="generalRsvpForm">
+                            <div class="mb-3">
+                                <label for="guest_name" class="form-label"><strong>Your Name *</strong></label>
+                                <input type="text" class="form-control" id="guest_name" name="guest_name" 
+                                       placeholder="Enter your full name" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="guest_email" class="form-label"><strong>Email Address</strong> <span class="text-muted">(Optional)</span></label>
+                                <input type="email" class="form-control" id="guest_email" name="guest_email" 
+                                       placeholder="your.email@example.com">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="guest_phone" class="form-label"><strong>Phone Number *</strong></label>
+                                <input type="tel" class="form-control" id="guest_phone" name="guest_phone" 
+                                       placeholder="+1234567890" required>
+                            </div>
+
+                            <h5 class="mb-3">Will you be attending?</h5>
+                            
+                            <div class="rsvp-options">
+                                <div class="rsvp-option" onclick="selectRSVP('Confirmed', this)">
+                                    <input type="radio" name="rsvp_status" value="Confirmed" id="confirm_general" required>
+                                    <label for="confirm_general" style="cursor: pointer; display: block;">
+                                        <div class="rsvp-icon">✓</div>
+                                        <div>Yes, I'll be there!</div>
+                                    </label>
+                                </div>
+                                
+                                <div class="rsvp-option" onclick="selectRSVP('Declined', this)">
+                                    <input type="radio" name="rsvp_status" value="Declined" id="decline_general" required>
+                                    <label for="decline_general" style="cursor: pointer; display: block;">
+                                        <div class="rsvp-icon">✗</div>
+                                        <div>Sorry, can't make it</div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="guest_count_general" class="form-label"><strong>How many people are coming with you?</strong></label>
+                                <p class="text-muted small mb-2">Including yourself</p>
+                                <div class="guest-count-selector">
+                                    <button type="button" class="btn-count" onclick="decrementGuestsGeneral()">-</button>
+                                    <input type="number" class="form-control guest-count-input" id="guest_count_general" name="guest_count" 
+                                           value="1" min="1" max="10" readonly>
+                                    <button type="button" class="btn-count" onclick="incrementGuestsGeneral()">+</button>
+                                </div>
+                                <input type="range" class="form-range mt-3" id="guest_count_slider_general" 
+                                       min="1" max="10" value="1" 
+                                       oninput="updateGuestCountGeneral(this.value)">
+                                <small class="text-muted">Use slider or +/- buttons to select</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="rsvp_response_general" class="form-label">Message to the couple (optional)</label>
+                                <textarea class="form-control" id="rsvp_response_general" name="rsvp_response" 
+                                          rows="4" placeholder="Share your wishes or dietary requirements..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-submit">
+                                <i class="bi bi-send"></i> Submit RSVP
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div class="tab-pane fade" id="gallery">
+                <div class="section-card">
+                    <h3 style="color: #c9a227; margin-bottom: 1.5rem;">
+                        <i class="bi bi-images"></i> Photo Gallery
+                    </h3>
+                    
+                    {% if albums %}
+                        {% for album_name, album_images in albums.items() %}
+                        <h4 class="album-title">{{ album_name }}</h4>
+                        <div class="gallery-grid">
+                            {% for img in album_images %}
+                            <div class="gallery-item" onclick="openLightbox('{{ url_for('static', filename=img.image_path) }}')">
+                                <img src="{{ url_for('static', filename=img.image_path) }}" class="gallery-img" alt="Wedding photo">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    {% elif images %}
+                        <div class="gallery-grid">
+                            {% for img in images %}
+                            <div class="gallery-item" onclick="openLightbox('{{ url_for('static', filename=img.image_path) }}')">
+                                <img src="{{ url_for('static', filename=img.image_path) }}" class="gallery-img" alt="Wedding photo">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-images" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Photos will be uploaded soon!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <span class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); changeImage(-1)">&#10094;</span>
+        <img src="" alt="Wedding photo" class="lightbox-img" id="lightboxImg" onclick="event.stopPropagation()">
+        <span class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); changeImage(1)">&#10095;</span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // RSVP Functions
+        function selectRSVP(status, element) {
+            document.querySelectorAll('.rsvp-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            const confirmId = element.querySelector('input[type="radio"]').id;
+            document.getElementById(confirmId).checked = true;
+        }
+
+        // Guest Count Functions for Personalized RSVP
+        function updateGuestCount(value) {
+            document.getElementById('guest_count').value = value;
+            document.getElementById('guest_count_slider').value = value;
+        }
+
+        function incrementGuests() {
+            const input = document.getElementById('guest_count');
+            const slider = document.getElementById('guest_count_slider');
+            if (parseInt(input.value) < 10) {
+                const newValue = parseInt(input.value) + 1;
+                input.value = newValue;
+                slider.value = newValue;
+            }
+        }
+
+        function decrementGuests() {
+            const input = document.getElementById('guest_count');
+            const slider = document.getElementById('guest_count_slider');
+            if (parseInt(input.value) > 1) {
+                const newValue = parseInt(input.value) - 1;
+                input.value = newValue;
+                slider.value = newValue;
+            }
+        }
+
+        // Guest Count Functions for General RSVP
+        function updateGuestCountGeneral(value) {
+            document.getElementById('guest_count_general').value = value;
+            document.getElementById('guest_count_slider_general').value = value;
+        }
+
+        function incrementGuestsGeneral() {
+            const input = document.getElementById('guest_count_general');
+            const slider = document.getElementById('guest_count_slider_general');
+            if (parseInt(input.value) < 10) {
+                const newValue = parseInt(input.value) + 1;
+                input.value = newValue;
+                slider.value = newValue;
+            }
+        }
+
+        function decrementGuestsGeneral() {
+            const input = document.getElementById('guest_count_general');
+            const slider = document.getElementById('guest_count_slider_general');
+            if (parseInt(input.value) > 1) {
+                const newValue = parseInt(input.value) - 1;
+                input.value = newValue;
+                slider.value = newValue;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation for personalized RSVP
+            const rsvpForm = document.getElementById('rsvpForm');
+            if (rsvpForm) {
+                rsvpForm.addEventListener('submit', function(e) {
+                    const rsvpStatus = document.querySelector('input[name="rsvp_status"]:checked');
+                    if (!rsvpStatus) {
+                        e.preventDefault();
+                        alert('Please select whether you will attend.');
+                    }
+                });
+            }
+            
+            // Form validation for general RSVP
+            const generalRsvpForm = document.getElementById('generalRsvpForm');
+            if (generalRsvpForm) {
+                generalRsvpForm.addEventListener('submit', function(e) {
+                    const guestName = document.getElementById('guest_name').value.trim();
+                    const rsvpStatus = document.querySelector('input[name="rsvp_status"]:checked');
+                    
+                    if (!guestName) {
+                        e.preventDefault();
+                        alert('Please enter your name.');
+                        return;
+                    }
+                    
+                    if (!rsvpStatus) {
+                        e.preventDefault();
+                        alert('Please select whether you will attend.');
+                        return;
+                    }
+                });
+            }
+        });
+
+        // Gallery Lightbox
+        let allImages = [];
+        let currentImageIndex = 0;
+
+        function initGallery() {
+            const galleryItems = document.querySelectorAll('.gallery-item img');
+            allImages = Array.from(galleryItems).map(img => img.src);
+        }
+
+        function openLightbox(imageSrc) {
+            currentImageIndex = allImages.indexOf(imageSrc);
+            document.getElementById('lightboxImg').src = imageSrc;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function changeImage(direction) {
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) currentImageIndex = allImages.length - 1;
+            if (currentImageIndex >= allImages.length) currentImageIndex = 0;
+            document.getElementById('lightboxImg').src = allImages[currentImageIndex];
+        }
+
+        // Keyboard navigation for lightbox
+        document.addEventListener('keydown', function(e) {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') changeImage(-1);
+                if (e.key === 'ArrowRight') changeImage(1);
+            }
+        });
+
+        // Initialize gallery when gallery tab is shown
+        document.querySelector('a[href="#gallery"]').addEventListener('shown.bs.tab', function() {
+            initGallery();
+        });
+    </script>
+</body>
+</html>

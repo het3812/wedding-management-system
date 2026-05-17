@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Admin Dashboard</h2>
+    <a href="{{ url_for('admin.create_invitation') }}" class="btn btn-gold">
+        <i class="bi bi-plus-lg"></i> Create Invitation
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <h6>Invitations</h6>
+            <h4>{{ invitations|length }}</h4>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <h6>Hosts</h6>
+            <h4>{{ total_hosts|default(0) }}</h4>
+            <a href="{{ url_for('admin.list_hosts') }}" class="small text-gold">Manage Hosts →</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <h6>Total Vendors</h6>
+            <h4>{{ total_vendors|default(0) }}</h4>
+            <a href="{{ url_for('admin.list_vendors') }}" class="small text-gold">Manage Vendors →</a>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <h6>Total Services</h6>
+            <h4>{{ total_services|default(0) }}</h4>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Transactions Card -->
+<div class="card mb-4 border-gold">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1"><i class="bi bi-credit-card text-gold"></i> Payment Transactions</h5>
+                <p class="text-muted mb-0">Monitor vendor-host payment transactions</p>
+            </div>
+            <a href="{{ url_for('admin.payment_transactions') }}" class="btn btn-gold">
+                View All Transactions <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Commission Dashboard Card -->
+<div class="card mb-4 border-primary">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1"><i class="bi bi-graph-up text-primary"></i> Commission Tracking</h5>
+                <p class="text-muted mb-0">Track and manage 2.5% commission from vendor transactions</p>
+            </div>
+            <a href="{{ url_for('admin.commission_dashboard') }}" class="btn btn-primary">
+                View Commission Dashboard <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter Invitations</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.dashboard') }}" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">From Date</label>
+                <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">To Date</label>
+                <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Host</label>
+                <select name="host" class="form-select">
+                    <option value="all">All Hosts</option>
+                    {% for host in hosts %}
+                    <option value="{{ host.id }}" {% if host_filter == host.id|string %}selected{% endif %}>
+                        {{ host.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary" title="Clear Filters">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </form>
+        
+        <!-- Search Bar -->
+        <form method="GET" action="{{ url_for('admin.dashboard') }}" class="mt-3">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Search by bride, groom, venue, or host name..." value="{{ search }}">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Filter Results Summary -->
+{% if date_from or date_to or status_filter != 'all' or host_filter != 'all' or search %}
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle"></i> 
+    <strong>Filtered Results:</strong> Showing {{ total_invitations }} invitation(s)
+    {% if active_invitations %} | {{ active_invitations }} active{% endif %}
+    {% if upcoming_invitations %} | {{ upcoming_invitations }} upcoming{% endif %}
+    <a href="{{ url_for('admin.dashboard') }}" class="alert-link float-end">Clear all filters</a>
+</div>
+{% endif %}
+
+<h5>All Invitations</h5>
+
+{% if not invitations %}
+<div class="card p-5 text-center text-muted">
+    <p class="mb-3">No invitations yet. Create your first wedding invitation to get started.</p>
+    <a href="{{ url_for('admin.create_invitation') }}" class="btn btn-gold">Create Invitation</a>
+</div>
+{% else %}
+<div class="row g-3">
+    {% for inv in invitations %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ inv.bride_name }} & {{ inv.groom_name }}</h5>
+                {% if inv.host_name %}<p class="card-text small text-muted mb-1">Host: {{ inv.host_name }}</p>{% endif %}
+                <p class="card-text text-muted small">
+                    {{ inv.wedding_date }} · {{ inv.venue[:30] }}{% if inv.venue|length > 30 %}...{% endif %}
+                </p>
+                <span class="badge {% if inv.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if inv.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+                <hr>
+                <div class="d-flex flex-wrap gap-1">
+                    <a href="{{ url_for('admin.edit_invitation', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{{ url_for('admin.manage_guests', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Guests</a>
+                    <a href="{{ url_for('admin.manage_events', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Events</a>
+                    <a href="{{ url_for('admin.upload_images', inv_id=inv.id) }}" class="btn btn-sm btn-outline-primary">Upload Images</a>
+                    <a href="{{ url_for('gallery.view_gallery', token=inv.invite_token) }}" class="btn btn-sm btn-outline-info" target="_blank">View Gallery</a>
+                </div>
+                <div class="mt-2">
+                    <label class="form-label small text-muted">Share Link:</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" id="link-{{ inv.id }}"
+                               value="{{ request.url_root.rstrip('/') }}{{ url_for('invitation.view_invitation', token=inv.invite_token) }}" readonly>
+                        <!-- URL: base + /invite/<token> -->
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyLink({{ inv.id }})">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+function copyLink(id) {
+    const el = document.getElementById('link-' + id);
+    el.select();
+    navigator.clipboard.writeText(el.value);
+    alert('Link copied! Share via WhatsApp or Email.');
+}
+</script>
+{% endblock %}

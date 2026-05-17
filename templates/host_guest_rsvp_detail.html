@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}RSVP Details - {{ guest.name }}{% endblock %}
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('host.manage_guests', inv_id=invitation.id) }}" class="text-muted text-decoration-none">&larr; Back to Guests</a>
+    <h3 class="mt-2">RSVP Details</h3>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ guest.name }}</h5>
+                <p class="text-muted mb-3">{{ invitation.bride_name }} & {{ invitation.groom_name }}</p>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Email:</strong> {{ guest.email or 'Not provided' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Phone:</strong> {{ guest.phone or 'Not provided' }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Category:</strong> 
+                        <span class="badge bg-secondary">{{ guest.category }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>RSVP Status:</strong>
+                        <span class="badge {% if guest.rsvp_status == 'Confirmed' %}bg-success{% elif guest.rsvp_status == 'Declined' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {{ guest.rsvp_status }}
+                        </span>
+                    </div>
+                </div>
+
+                {% if guest.plus_one %}
+                <div class="alert alert-info">
+                    <strong>Plus One:</strong> 
+                    {% if guest.plus_one_name %}
+                        {{ guest.plus_one_name }}
+                    {% else %}
+                        Yes (name not provided)
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if guest.rsvp_submitted_at %}
+                <div class="mb-3">
+                    <strong>Submitted:</strong> 
+                    {{ guest.rsvp_submitted_at.strftime('%B %d, %Y at %I:%M %p') }}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <strong>Not yet responded</strong>
+                </div>
+                {% endif %}
+
+                {% if guest.rsvp_response %}
+                <div class="mt-3">
+                    <strong>Message from Guest:</strong>
+                    <div class="card bg-light mt-2">
+                        <div class="card-body">
+                            {{ guest.rsvp_response }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">RSVP Link</h6>
+                {% if guest.rsvp_token %}
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control form-control-sm" 
+                           value="{{ request.url_root }}rsvp/{{ guest.rsvp_token }}" 
+                           id="rsvpLink" readonly>
+                    <button class="btn btn-sm btn-outline-primary" onclick="copyLink()">Copy</button>
+                </div>
+                <small class="text-muted">Share this link with {{ guest.name }} to RSVP</small>
+                {% else %}
+                <p class="text-muted">No RSVP token generated</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="card-title">Actions</h6>
+                <a href="{{ url_for('host.edit_guest', inv_id=invitation.id, guest_id=guest.id) }}" 
+                   class="btn btn-sm btn-outline-secondary w-100 mb-2">Edit Guest</a>
+                <a href="{{ url_for('host.delete_guest', inv_id=invitation.id, guest_id=guest.id) }}" 
+                   class="btn btn-sm btn-outline-danger w-100" 
+                   onclick="return confirm('Remove this guest?')">Delete Guest</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyLink() {
+    const linkInput = document.getElementById('rsvpLink');
+    linkInput.select();
+    navigator.clipboard.writeText(linkInput.value).then(function() {
+        alert('RSVP link copied to clipboard!');
+    }).catch(function(err) {
+        alert('Failed to copy link');
+    });
+}
+</script>
+{% endblock %}
